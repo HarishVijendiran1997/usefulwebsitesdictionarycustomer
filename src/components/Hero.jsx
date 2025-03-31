@@ -140,7 +140,7 @@ const Hero = ({ searchQuery }) => {
     );
 
     return (
-        <div className="bg-neutral-950 w-full sm:h-[calc(100vh-58px)] h-screen flex flex-col sm:flex-row overflow-hidden" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
+        <div className="bg-neutral-950 w-full sm:h-[calc(100vh-64px)] h-screen flex flex-col sm:flex-row overflow-hidden" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
             <Suspense fallback={<div className="flex justify-center items-center h-64 p-10">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
             </div>}>
@@ -151,13 +151,13 @@ const Hero = ({ searchQuery }) => {
                 />
             </Suspense>
 
-            <main className="flex-1 px-4 xl:ml-4 overflow-auto">
-                <div className="sticky top-0 z-10 bg-neutral-950 pb-2 sm:pt-2">
+            <main className="flex-1 px-4 sm:px-0 overflow-auto">
+                <div className="sticky top-0 z-10 bg-black pb-2 sm:pt-2">
                     <div className="flex flex-wrap gap-2 px-4">
                         {["all", "favorites", "trending"].map((tab) => (
                             <button
                                 key={tab}
-                                className={`px-4 py-2 rounded-lg transition ${activeTab === tab ? "bg-black text-white" : "bg-white text-black"}`}
+                                className={`px-3 md:text-xs text-sm py-2 rounded-lg font-semibold transition ${activeTab === tab ? "bg-black border border-b-0 border-t-0 text-white" : "bg-white text-black"}`}
                                 onClick={() => setActiveTab(tab)}
                             >
                                 {tab === "all" ? "All Websites" : tab === "favorites" ? "Favorites" : "Trending"}
@@ -172,7 +172,7 @@ const Hero = ({ searchQuery }) => {
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
                         </div>
                     ) : (
-                        <section className="w-full max-w-screen-xl mx-auto bg-neutral-950 py-10 px-2 rounded-lg">
+                        <section className="w-full max-w-screen-xl mx-auto bg-neutral-950 pb-10 pt-4 px-2 rounded-lg">
                             <h2 className="text-2xl font-bold text-white capitalize">
                                 {activeTab === "all"
                                     ? selectedCategory
@@ -181,7 +181,7 @@ const Hero = ({ searchQuery }) => {
                                         : "Favorites"}
                             </h2>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-4">
                                 {displayedWebsites.length > 0 ? (
                                     displayedWebsites.map(renderWebsiteCard)
                                 ) : (
