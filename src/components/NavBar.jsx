@@ -1,56 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import { FaSearch } from 'react-icons/fa';
-import { useWebsites } from '../contexts/WebsitesContext'; // Import your websites context
+import { FaSearch, FaBook } from 'react-icons/fa';
+import { useWebsites } from '../contexts/WebsitesContext';
 
-const NavBar = () => {
-    const { websites } = useWebsites(); // Get websites data from context
+const NavBar = ({ searchQuery, setSearchQuery }) => {
+    const { websites } = useWebsites();
     const [totalVisits, setTotalVisits] = useState(0);
 
-    // Calculate total visits whenever websites data changes
     useEffect(() => {
         if (websites && websites.length > 0) {
-            const sum = websites.reduce((total, website) => {
-                return total + (website.visitedCount || 0);
-            }, 0);
+            const sum = websites.reduce((total, website) => total + (website.visitedCount || 0), 0);
             setTotalVisits(sum);
         }
     }, [websites]);
 
     return (
         <nav className="bg-black text-white shadow-md px-6 py-2">
-            {/* Mobile Layout: Title on Top */}
-            <div className="flex sm:hidden justify-center w-full">
-                <h1 className="text-xl font-light text-center">Useful Websites Dictionary</h1>
+            {/* Mobile Layout */}
+            <div className="flex sm:hidden flex-col items-center">
+                <div className="flex items-center gap-2">
+                    <FaBook className="text-blue-500" size={24} />
+                    <h1 className="text-xl font-light text-center py-2">Useful Websites Dictionary</h1>
+                </div>
+                <div className="flex justify-between items-center w-full mt-2">
+                    <div className="relative flex-1 mr-2">
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className="border border-gray-700 rounded-full py-2 px-4 pr-10 w-full focus:outline-none focus:border-blue-500"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                    </div>
+                    <span className="text-md font-light">Visits: <strong>{totalVisits.toLocaleString()}</strong></span>
+                </div>
             </div>
 
-            {/* Desktop Layout: Title, Search Bar, and Visit Count */}
+            {/* Desktop Layout */}
             <div className="hidden sm:flex justify-between items-center w-full">
-                <h1 className="text-2xl font-light">Useful Websites Dictionary</h1>
-
-                {/* Centered Search Bar with Icon Inside */}
-                <div className="relative flex-1 flex justify-center max-w-[400px]">
+                <div className="flex items-center gap-2">
+                    <FaBook className="text-blue-500" size={28} />
+                    <h1 className="text-2xl font-light py-2">Useful Websites Dictionary</h1>
+                </div>
+                <div className="relative flex-1 max-w-xl mx-4">
                     <input
                         type="text"
-                        placeholder="Search..."
-                        className="border border-gray-700 rounded-full py-2 px-4 pr-12 w-full focus:outline-none focus:border-blue-500"
+                        placeholder="Search by title, category or tags..."
+                        className="border border-gray-700 rounded-full py-2 px-4 pr-10 w-full focus:outline-none focus:border-blue-500"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <FaSearch className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer" />
+                    <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                 </div>
-
-                <span className="text-lg">Total Visits: {totalVisits.toLocaleString()}</span>
-            </div>
-
-            {/* Mobile Layout: Search Bar and Visit Count */}
-            <div className="sm:hidden flex flex-col gap-2 mt-3">
-                <div className="relative w-full">
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className="border border-gray-300 rounded-md p-2 pr-12 w-full focus:outline-none focus:border-blue-500"
-                    />
-                    <FaSearch className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer" />
-                </div>
-                <span className="text-lg text-center">Total Visits: {totalVisits.toLocaleString()}</span>
+                <span className="text-lg">{totalVisits.toLocaleString()} : Total Visits</span>
             </div>
         </nav>
     );

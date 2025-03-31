@@ -5,7 +5,7 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 const SideBar = React.lazy(() => import("./SideBar"));
 const ExpandableText = React.lazy(() => import("./ExpandableText"));
 
-const Hero = () => {
+const Hero = ({ searchQuery }) => {
     const {
         activeTab,
         setActiveTab,
@@ -18,7 +18,8 @@ const Hero = () => {
         toggleFavorite
     } = useWebsites();
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [displayCount, setDisplayCount] = useState(20);
+    const PAGE_LIMIT = 12
+    const [displayCount, setDisplayCount] = useState(PAGE_LIMIT);
 
     // Filter websites based on active tab and category
     const filteredWebsites = () => {
@@ -26,11 +27,20 @@ const Hero = () => {
             ? websites
             : websites.filter(website => website.category.toLowerCase() === selectedCategory.toLowerCase());
 
+        if (searchQuery.trim() && activeTab !== "trending") {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(website =>
+                website.title.toLowerCase().includes(query) ||
+                website.category.toLowerCase().includes(query) ||
+                (website.tags && website.tags.some(tag => tag.toLowerCase().includes(query)))
+            );
+        }
+
         if (activeTab === "favorites") {
             return filtered.filter(website => favorites.includes(website.id));
         } else if (activeTab === "trending") {
             // Return top 10 most visited websites
-            return [...filtered]
+            return [...websites]
                 .sort((a, b) => (b.visitedCount || 0) - (a.visitedCount || 0))
                 .slice(0, 10);
         }
@@ -44,14 +54,14 @@ const Hero = () => {
 
     const handleCategorySelection = (category) => {
         setSelectedCategory(category);
-        setDisplayCount(20);
+        setDisplayCount(10);
     };
 
     const handleLoadMore = () => {
         if (displayCount >= filteredWebsites().length && !noMoreData) {
             loadMoreWebsites();
         }
-        setDisplayCount(prev => prev + 20);
+        setDisplayCount(prev => prev + PAGE_LIMIT);
     };
 
     const handleWebsiteClick = async (site) => {
@@ -67,12 +77,12 @@ const Hero = () => {
     };
 
     useEffect(() => {
-        setDisplayCount(20);
+        setDisplayCount(PAGE_LIMIT);
     }, [activeTab, selectedCategory]);
 
     const showLoadMore = activeTab === "all" &&
         (filteredWebsites().length > displayCount ||
-            (!noMoreData && selectedCategory === "All"));
+            (!noMoreData && selectedCategory === "All" && !searchQuery.trim()));
 
     const renderWebsiteCard = (site) => (
         <div key={site.id} className="bg-neutral-950 border border-neutral-900 rounded-lg drop-shadow-lg flex flex-col hover:scale-105 transition-all duration-300">
@@ -142,7 +152,7 @@ const Hero = () => {
             </Suspense>
 
             <main className="flex-1 px-4 xl:ml-4 overflow-auto">
-                <div className="sticky top-0 z-10 bg-neutral-950 pb-2 pt-2">
+                <div className="sticky top-0 z-10 bg-neutral-950 pb-2 sm:pt-2">
                     <div className="flex flex-wrap gap-2 px-4">
                         {["all", "favorites", "trending"].map((tab) => (
                             <button
@@ -162,7 +172,7 @@ const Hero = () => {
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
                         </div>
                     ) : (
-                        <section className="w-full max-w-screen-xl mx-auto bg-neutral-950 p-5 rounded-lg">
+                        <section className="w-full max-w-screen-xl mx-auto bg-neutral-950 py-10 px-2 rounded-lg">
                             <h2 className="text-2xl font-bold text-white capitalize">
                                 {activeTab === "all"
                                     ? selectedCategory
@@ -187,7 +197,7 @@ const Hero = () => {
                                 )}
                             </div>
 
-                            {showLoadMore && (
+                            {showLoadMore && filteredWebsites().length >= PAGE_LIMIT && (
                                 <button
                                     onClick={handleLoadMore}
                                     className="mt-4 mb-10 px-4 py-2 bg-neutral-700 text-white rounded-lg block mx-auto hover:bg-neutral-600 transition duration-200"

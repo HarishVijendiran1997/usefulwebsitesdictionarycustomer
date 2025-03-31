@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useWebsites } from '../contexts/WebsitesContext';
 
 const SideBar = ({ selectedCategory, onCategorySelect, setSelectedCategory }) => {
-    
+
     const { websites } = useWebsites();
     const categories = ['All', ...new Set(websites.map(website => website.category))]; // Add "All" to the categories
 
@@ -14,7 +14,6 @@ const SideBar = ({ selectedCategory, onCategorySelect, setSelectedCategory }) =>
 
     // useEffect to log the selectedCategory after it has been updated
     useEffect(() => {
-        console.log(selectedCategory);
     }, [selectedCategory]);
 
     return (
