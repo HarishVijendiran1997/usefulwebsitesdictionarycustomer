@@ -1,5 +1,6 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { useWebsites } from "../contexts/WebsitesContext";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 const SideBar = React.lazy(() => import("./SideBar"));
 const ExpandableText = React.lazy(() => import("./ExpandableText"));
@@ -12,7 +13,9 @@ const Hero = () => {
         loading,
         noMoreData,
         loadMoreWebsites,
-        updateVisitCount
+        updateVisitCount,
+        favorites,
+        toggleFavorite
     } = useWebsites();
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [displayCount, setDisplayCount] = useState(20);
@@ -24,7 +27,7 @@ const Hero = () => {
             : websites.filter(website => website.category.toLowerCase() === selectedCategory.toLowerCase());
 
         if (activeTab === "favorites") {
-            return filtered.filter(website => website.isFavorite);
+            return filtered.filter(website => favorites.includes(website.id));
         } else if (activeTab === "trending") {
             // Return top 10 most visited websites
             return [...filtered]
@@ -73,6 +76,22 @@ const Hero = () => {
 
     const renderWebsiteCard = (site) => (
         <div key={site.id} className="bg-neutral-950 border border-neutral-900 rounded-lg drop-shadow-lg flex flex-col hover:scale-105 transition-all duration-300">
+            {/* Favorite toggle button */}
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleFavorite(site.id);
+                }}
+                className="absolute top-2 right-2 z-10 p-2 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition"
+                aria-label={favorites.includes(site.id) ? "Remove from favorites" : "Add to favorites"}
+            >
+                {favorites.includes(site.id) ? (
+                    <FaHeart className="text-red-500 text-xl" />
+                ) : (
+                    <FaRegHeart className="text-white text-xl hover:text-red-500" />
+                )}
+            </button>
             <img src={site.imageUrl} alt={site.title} className="w-full h-50 object-cover rounded-t-lg" />
             <div className="px-2">
                 <div className="flex justify-between items-center mt-2 py-2">
@@ -111,7 +130,7 @@ const Hero = () => {
     );
 
     return (
-        <div className="bg-neutral-950 w-full sm:h-[calc(100vh-58px)] h-screen flex flex-col sm:flex-row overflow-hidden" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent"}}>
+        <div className="bg-neutral-950 w-full sm:h-[calc(100vh-58px)] h-screen flex flex-col sm:flex-row overflow-hidden" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
             <Suspense fallback={<div className="flex justify-center items-center h-64 p-10">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
             </div>}>

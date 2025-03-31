@@ -8,6 +8,24 @@ const WebsitesProvider = ({ children }) => {
     const [activeTab, setActiveTab] = useState("all");
     const [websites, setWebsites] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [favorites, setFavorites] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('websiteFavorites');
+            return saved ? JSON.parse(saved) : [];
+        }
+        return [];
+    });
+    useEffect(() => {
+        localStorage.setItem('websiteFavorites', JSON.stringify(favorites));
+    }, [favorites]);
+
+    const toggleFavorite = (websiteId) => {
+        setFavorites(prev => 
+            prev.includes(websiteId)
+                ? prev.filter(id => id !== websiteId)
+                : [...prev, websiteId]
+        );
+    };
 
     useEffect(() => {
         const fetchWebsites = async () => {
@@ -38,10 +56,10 @@ const WebsitesProvider = ({ children }) => {
                 visitedCount: increment(1)
             });
             // Update local state optimistically
-            setWebsites(prevWebsites => 
-                prevWebsites.map(website => 
-                    website.id === websiteId 
-                        ? { ...website, visitedCount: (website.visitedCount || 0) + 1 } 
+            setWebsites(prevWebsites =>
+                prevWebsites.map(website =>
+                    website.id === websiteId
+                        ? { ...website, visitedCount: (website.visitedCount || 0) + 1 }
                         : website
                 )
             );
@@ -58,6 +76,8 @@ const WebsitesProvider = ({ children }) => {
                 websites,
                 loading,
                 updateVisitCount,
+                favorites,
+                toggleFavorite
             }}
         >
             {children}
