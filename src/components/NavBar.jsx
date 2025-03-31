@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { FaSearch } from 'react-icons/fa'; // Import FontAwesome Search Icon
+import { FaSearch } from 'react-icons/fa';
+import { useWebsites } from '../contexts/WebsitesContext'; // Import your websites context
 
 const NavBar = () => {
-    const [count, setCount] = useState(0)
-    function getRandomValue() {
-        return Math.floor(Math.random() * (1200 - 1000 + 1)) + 1000;
-    }
-    useEffect(() => {
-        const timeout = setTimeout(
-            () => setCount(prev => prev + 1),
-            getRandomValue()
-        )
-        return () => clearTimeout(timeout);
-    }, [count])
+    const { websites } = useWebsites(); // Get websites data from context
+    const [totalVisits, setTotalVisits] = useState(0);
 
+    // Calculate total visits whenever websites data changes
+    useEffect(() => {
+        if (websites && websites.length > 0) {
+            const sum = websites.reduce((total, website) => {
+                return total + (website.visitedCount || 0);
+            }, 0);
+            setTotalVisits(sum);
+        }
+    }, [websites]);
 
     return (
-        <nav className="sticky top-0 z-50 bg-black text-white shadow-md px-6 py-4">
+        <nav className="bg-black text-white shadow-md px-6 py-2">
             {/* Mobile Layout: Title on Top */}
             <div className="flex sm:hidden justify-center w-full">
                 <h1 className="text-xl font-light text-center">Useful Websites Dictionary</h1>
@@ -36,7 +37,7 @@ const NavBar = () => {
                     <FaSearch className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer" />
                 </div>
 
-                <span className="text-lg">Users Site Visit: {count}</span>
+                <span className="text-lg">Total Visits: {totalVisits.toLocaleString()}</span>
             </div>
 
             {/* Mobile Layout: Search Bar and Visit Count */}
@@ -49,7 +50,7 @@ const NavBar = () => {
                     />
                     <FaSearch className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer" />
                 </div>
-                <span className="text-lg text-center">Users Site Visit: {count}</span>
+                <span className="text-lg text-center">Total Visits: {totalVisits.toLocaleString()}</span>
             </div>
         </nav>
     );
