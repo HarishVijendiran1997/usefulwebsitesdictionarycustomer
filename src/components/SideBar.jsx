@@ -1,5 +1,7 @@
-import React, { useState } from 'react'
-import { categories } from '../utils/Categories'
+import React, { useState, Suspense } from 'react'
+
+// Lazy load the CategoryList component
+const CategoryList = React.lazy(() => import('./CategoryList'))
 
 const SideBar = () => {
     const [selectedCategory, setSelectedCategory] = useState('')
@@ -16,18 +18,13 @@ const SideBar = () => {
             <ul className="flex sm:flex-col sm:justify-center sm:items-start p-2 font-semibold">
                 <h1 className="mb-4 sm:block hidden">Categories</h1>
 
-                <ul className="flex sm:flex-col space-x-4 sm:space-x-0 sm:space-y-2 overflow-x-auto whitespace-nowrap w-full">
-                    {categories.map((category, index) => (
-                        <li
-                            key={index}
-                            onClick={handleCategory}
-                            className={`hover:bg-neutral-800 active:bg-neutral-900 p-2 rounded-sm font-extralight cursor-pointer
-                                        ${selectedCategory === category ? 'bg-neutral-700' : ''}`}
-                        >
-                            {category}
-                        </li>
-                    ))}
-                </ul>
+                {/* Lazy loading CategoryList component */}
+                <Suspense fallback={<div className="text-center text-white">Loading Categories...</div>}>
+                    <CategoryList 
+                        selectedCategory={selectedCategory} 
+                        handleCategory={handleCategory} 
+                    />
+                </Suspense>
             </ul>
         </div>
     )
