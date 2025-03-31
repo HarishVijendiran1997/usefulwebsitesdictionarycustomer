@@ -17,13 +17,11 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
         <nav className="bg-black text-white shadow-md px-6 py-2">
             {/* Mobile Layout */}
             <div className="flex sm:hidden flex-col items-center">
-                <div className="flex items-center gap-2">
-                    <div className="relative -translate-y-3 flex items-center">
-                        <FaBook className="text-white relative" size={30} />
-                        <FaBook className="text-red-500 absolute -translate-x-[2px]" size={30} />
-                    </div>
 
-                    {/* Wrapping the title and subtitle in a flex column */}
+                <div className="flex items-center gap-2"><div className="relative -translate-y-3 flex items-center">
+                    <FaBook className="text-white relative" size={30} />
+                    <FaBook className="text-red-500 absolute -translate-x-[2px]" size={30} />
+                </div>
                     <div className="flex flex-col items-center">
                         <h1 className="text-2xl font-light text-center mt-2">
                             Useful Websites Dictionary
@@ -38,7 +36,8 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
                         <input
                             type="text"
                             placeholder="Search..."
-                            className="border border-gray-300 rounded-full py-2 px-4 pr-10 w-full focus:outline-none focus:border-red-500"
+
+                            className="border border-gray-400 rounded-full py-2 px-4 pr-10 w-full focus:outline-none focus:border-red-500"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -59,7 +58,7 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
                     <input
                         type="text"
                         placeholder="Search by title, category or tags..."
-                        className="border border-gray-700 rounded-full py-2 px-4 pr-10 w-full focus:outline-none focus:border-blue-500"
+                        className="border border-gray-700 rounded-full py-2 px-4 pr-10 w-full focus:outline-none focus:border-red-500"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />

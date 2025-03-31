@@ -151,13 +151,15 @@ const Hero = ({ searchQuery }) => {
                 />
             </Suspense>
 
-            <main className="flex-1 px-4 sm:px-0 overflow-auto">
+
+            <main className="flex-1 px-4 md:px-0 overflow-auto">
                 <div className="sticky top-0 z-10 bg-black pb-2 sm:pt-2">
                     <div className="flex flex-wrap gap-2 px-4">
                         {["all", "favorites", "trending"].map((tab) => (
                             <button
                                 key={tab}
-                                className={`px-3 md:text-xs text-sm py-2 rounded-lg font-semibold transition ${activeTab === tab ? "bg-black border border-b-0 border-t-0 text-white" : "bg-white text-black"}`}
+
+                                className={`px-3 md:text-xs text-sm py-2 rounded-full font-semibold transition ${activeTab === tab ? "bg-black border border-b-0 border-t-0 text-white" : "bg-white border border-b-0 border-t-0 text-black"}`}
                                 onClick={() => setActiveTab(tab)}
                             >
                                 {tab === "all" ? "All Websites" : tab === "favorites" ? "Favorites" : "Trending"}
@@ -172,7 +174,7 @@ const Hero = ({ searchQuery }) => {
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
                         </div>
                     ) : (
-                        <section className="w-full max-w-screen-xl mx-auto bg-neutral-950 pb-10 pt-4 px-2 rounded-lg">
+                        <section className="w-full max-w-screen-xl mx-auto bg-neutral-950 py-5  px-2 rounded-lg">
                             <h2 className="text-2xl font-bold text-white capitalize">
                                 {activeTab === "all"
                                     ? selectedCategory

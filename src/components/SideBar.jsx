@@ -1,39 +1,15 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useWebsites } from '../contexts/WebsitesContext';
 import {
-    FaRobot,          // AI & Robots
-    FaBriefcase,      // Business
-    FaMotorcycle,     // Cars & Bikes
-    FaTshirt,         // Clothes & Fashion
-    FaCode,           // Coding
-    FaBitcoin,        // Crypto & Investing
-    FaPalette,        // Design & Art
-    FaGraduationCap,  // Education
-    FaFilm,           // Entertainment
-    FaDumbbell,       // Exercise & Fitness
-    FaUtensils,       // Food & Cooking
-    FaHeartbeat,      // Health
-    FaHome,           // Houses & Property
-    FaShieldAlt,      // Internet Safety
-    FaSmile,          // Lifestyle
-    FaBullhorn,       // Marketing
-    FaMoneyBillWave,  // Money
-    FaBrain,          // Motivation & Mindset
-    FaTv,             // Movies & TV Shows
-    FaMusic,          // Music
-    FaNewspaper,      // News
-    FaShoppingBag,    // Online Shopping
-    FaCamera,         // Photography
-    FaFlask,          // Science
-    FaUserAstronaut,  // Self-Improvement
-    FaHashtag,        // Social Media
-    FaFootballBall,   // Sports
-    FaMicrochip,      // Technology
-    FaPlane,          // Travel
-    FaGamepad,        // Video Games
-    FaTasks           // Work & Productivity
+    FaRobot, FaBriefcase, FaMotorcycle, FaTshirt, FaCode,
+    FaBitcoin, FaPalette, FaGraduationCap, FaFilm, FaDumbbell,
+    FaUtensils, FaHeartbeat, FaHome, FaShieldAlt, FaSmile,
+    FaBullhorn, FaMoneyBillWave, FaBrain, FaTv, FaMusic,
+    FaNewspaper, FaShoppingBag, FaCamera, FaFlask, FaUserAstronaut,
+    FaHashtag, FaFootballBall, FaMicrochip, FaPlane, FaGamepad,
+    FaTasks, FaQuestionCircle
 } from 'react-icons/fa';
-import { FaQuestionCircle } from 'react-icons/fa';
+
 const SideBar = ({ selectedCategory, onCategorySelect, setSelectedCategory }) => {
     const categoryIcons = {
         "AI & Robots": <FaRobot className="mr-2" />,
@@ -70,43 +46,42 @@ const SideBar = ({ selectedCategory, onCategorySelect, setSelectedCategory }) =>
     };
 
     const { websites } = useWebsites();
-    const categories = ['All', ...new Set(websites.map(website => website.category))]; // Add "All" to the categories
+    const categories = ['All', ...new Set(websites.map(website => website.category))];
 
     const handleCategory = (e) => {
-        const category = e.target.innerText;
+        const category = e.currentTarget.textContent.trim();
         setSelectedCategory(category);
         onCategorySelect(category);
     };
 
-    // useEffect to log the selectedCategory after it has been updated
-    useEffect(() => {
-    }, [selectedCategory]);
-
     return (
         <div
-            className="text-white sm:w-64 w-full bg-black sm:max-h-auto max-h-auto cursor-auto 
-  overflow-x-auto sm:overflow-x-hidden relative shadow-xl shadow-black"
-            style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}
-        >
-            <ul className="flex sm:flex-col sm:justify-center sm:items-start p-1 md:p-2 font-semibold">
-                <h1 className="mb-4 sm:block hidden">Categories</h1>
-                <div className="absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-black opacity-90 sm:hidden"></div>
-                <div className="absolute top-0 bottom-0 right-0 w-8 bg-gradient-to-l from-black opacity-90 sm:hidden"></div>
-                {/* Directly inserting CategoryList code here */}
-                <ul className="flex sm:flex-col space-x-4 sm:space-x-0 sm:space-y-2 overflow-x-auto whitespace-nowrap w-full">
+        className="text-white sm:w-64 w-full bg-black sm:max-h-auto max-h-auto cursor-auto 
+overflow-x-auto sm:overflow-x-hidden relative shadow-xl shadow-black"
+        style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}
+    >
+
+            <h1 className="hidden sm:block text-xl font-bold p-4 pb-2">Categories</h1>
+            
+            <div className="flex-1 overflow-y-auto">
+                <ul className="flex sm:flex-col flex-row sm:space-y-2 space-x-2 sm:space-x-0 px-2 sm:px-4 py-2">
                     {categories.map((category, index) => (
                         <li
                             key={index}
                             onClick={handleCategory}
-                            className={`hover:bg-neutral-800 active:bg-neutral-900 transition-transform hover:scale-105 mx-2 flex items-center p-2 rounded-sm font-extralight cursor-pointer
-                                ${selectedCategory === category ? 'bg-neutral-700' : ''}`}
+                            className={`
+                                flex items-center p-2 rounded-lg  cursor-pointer 
+                                hover:bg-neutral-800 active:bg-neutral-700 transition-colors
+                                ${selectedCategory === category ? 'bg-gray-700 md:bg-neutral-700 font-semibold' : 'font-semibold'}
+                                whitespace-nowrap
+                            `}
                         >
                             {categoryIcons[category] || <FaQuestionCircle className="mr-2" />}
                             <span>{category}</span>
                         </li>
                     ))}
                 </ul>
-            </ul>
+            </div>
         </div>
     );
 };
