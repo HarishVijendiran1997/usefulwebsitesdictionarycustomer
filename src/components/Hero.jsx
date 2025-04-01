@@ -174,7 +174,7 @@ const Hero = ({ searchQuery }) => {
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
                         </div>
                     ) : (
-                        <section className="w-full max-w-screen-xl mx-auto bg-neutral-950 py-5  px-2 rounded-lg">
+                        <section className="w-full max-w-screen-xl mx-auto bg-neutral-950 py-4  px-2 rounded-lg">
                             <h2 className="text-2xl font-bold text-white capitalize">
                                 {activeTab === "all"
                                     ? selectedCategory
