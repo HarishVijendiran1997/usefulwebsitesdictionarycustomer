@@ -14,6 +14,8 @@ import {
 const WebsitesContext = createContext();
 
 const WebsitesProvider = ({ children }) => {
+    
+    
     const [activeTab, setActiveTab] = useState("all");
     const [websites, setWebsites] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -103,6 +105,18 @@ const WebsitesProvider = ({ children }) => {
         }
     }, []);
 
+    const getTodaysWebsites = useCallback((websites) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        return websites.filter(website => {
+            if (!website.createdAt) return false;
+            const websiteDate = website.createdAt.toDate();
+            websiteDate.setHours(0, 0, 0, 0);
+            return websiteDate.getTime() === today.getTime();
+        });
+    }, []);
+
     const value = useMemo(() => ({
         activeTab,
         setActiveTab,
@@ -111,7 +125,8 @@ const WebsitesProvider = ({ children }) => {
         error,
         updateVisitCount,
         favorites,
-        toggleFavorite
+        toggleFavorite,
+        getTodaysWebsites 
     }), [activeTab, websites, loading, error, updateVisitCount, favorites, toggleFavorite]);
 
     return (

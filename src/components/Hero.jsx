@@ -15,7 +15,8 @@ const Hero = ({ searchQuery }) => {
         loadMoreWebsites,
         updateVisitCount,
         favorites,
-        toggleFavorite
+        toggleFavorite,
+        getTodaysWebsites
     } = useWebsites();
     const [selectedCategory, setSelectedCategory] = useState('All');
     const PAGE_LIMIT = 12
@@ -27,7 +28,7 @@ const Hero = ({ searchQuery }) => {
             ? websites
             : websites.filter(website => website.category.toLowerCase() === selectedCategory.toLowerCase());
 
-        if (searchQuery.trim() && activeTab !== "trending") {
+        if (searchQuery.trim() && activeTab !== "trending" && activeTab !== "latest") {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(website =>
                 website.title.toLowerCase().includes(query) ||
@@ -43,12 +44,16 @@ const Hero = ({ searchQuery }) => {
             return [...websites]
                 .sort((a, b) => (b.visitedCount || 0) - (a.visitedCount || 0))
                 .slice(0, 10);
+        } else if (activeTab === "latest") {
+            // Return 10 most recently added websites (you'll implement this later)
+            const todaysWebsites = getTodaysWebsites(filtered);
+            return todaysWebsites.sort((a, b) => b.createdAt - a.createdAt);
         }
         return filtered;
     };
 
 
-    const displayedWebsites = activeTab === "trending"
+    const displayedWebsites = (activeTab === "trending" || activeTab === "latest")
         ? filteredWebsites()
         : filteredWebsites().slice(0, displayCount);
 
@@ -155,14 +160,16 @@ const Hero = ({ searchQuery }) => {
             <main className="flex-1 px-4 md:px-0 overflow-auto">
                 <div className="sticky top-0 z-10 bg-black pb-2 sm:pt-2">
                     <div className="flex flex-wrap gap-2 px-4">
-                        {["all", "favorites", "trending"].map((tab) => (
+                        {["all", "favorites", "trending", "latest"].map((tab) => (
                             <button
                                 key={tab}
 
-                                className={`px-3 md:text-xs text-sm py-2 rounded-full font-semibold transition ${activeTab === tab ? "bg-black border border-b-0 border-t-0 text-white" : "bg-white border border-b-0 border-t-0 text-black"}`}
+                                className={`px-3 md:text-xs text-xs py-2 rounded-full font-semibold transition ${activeTab === tab ? "bg-black border border-b-0 border-t-0 text-white" : "bg-white border border-b-0 border-t-0 text-black"}`}
                                 onClick={() => setActiveTab(tab)}
                             >
-                                {tab === "all" ? "All Websites" : tab === "favorites" ? "Favorites" : "Trending"}
+                                {tab === "all" ? "All Websites" :
+                                    tab === "favorites" ? "Favorites" :
+                                        tab === "trending" ? "Trending" : "Latest"}
                             </button>
                         ))}
                     </div>
@@ -180,7 +187,9 @@ const Hero = ({ searchQuery }) => {
                                     ? selectedCategory
                                     : activeTab === "trending"
                                         ? "Top 10 Trending Websites"
-                                        : "Favorites"}
+                                        : activeTab === "latest"
+                                            ? "Latest Websites"
+                                            : "Your Favorites"}
                             </h2>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-4">
@@ -193,7 +202,9 @@ const Hero = ({ searchQuery }) => {
                                                 ? "No favorite websites yet. Add some to see them here!"
                                                 : activeTab === "trending"
                                                     ? "No trending websites yet. Start browsing to see popular sites!"
-                                                    : "No websites found in this category."}
+                                                    : activeTab === "latest"
+                                                        ? "No websites added today. Check back later!"
+                                                        : "No websites found in this category."}
                                         </p>
                                     </div>
                                 )}
