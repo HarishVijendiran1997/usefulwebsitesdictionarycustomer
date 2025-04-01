@@ -46,7 +46,14 @@ const SideBar = ({ selectedCategory, onCategorySelect, setSelectedCategory }) =>
     };
 
     const { websites } = useWebsites();
-    const categories = ['All', ...new Set(websites.map(website => website.category))];
+
+    // Get unique categories and sort them in ascending order
+    const categories = ['All', ...new Set(websites.map(website => website.category))]
+        .sort((a, b) => {
+            if (a === 'All') return -1; // Keep 'All' at the top
+            if (b === 'All') return 1;
+            return a.localeCompare(b); // Sort other categories alphabetically
+        });
 
     const handleCategory = (e) => {
         const category = e.currentTarget.textContent.trim();
@@ -56,13 +63,12 @@ const SideBar = ({ selectedCategory, onCategorySelect, setSelectedCategory }) =>
 
     return (
         <div
-        className="text-white sm:w-64 w-full bg-black sm:max-h-auto max-h-auto cursor-auto 
-overflow-x-auto sm:overflow-x-hidden relative shadow-xl shadow-black"
-        style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}
-    >
-
+            className="text-white sm:w-64 w-full bg-black sm:max-h-auto max-h-auto cursor-auto 
+            overflow-x-auto sm:overflow-x-hidden relative shadow-xl shadow-black"
+            style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}
+        >
             <h1 className="hidden sm:block text-xl font-bold p-4 pb-2">Categories</h1>
-            
+
             <div className="flex-1 overflow-y-auto">
                 <ul className="flex sm:flex-col flex-row sm:space-y-2 space-x-2 sm:space-x-0 px-2 sm:px-4 py-2">
                     {categories.map((category, index) => (
