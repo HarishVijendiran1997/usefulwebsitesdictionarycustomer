@@ -7,4 +7,5 @@ body {
   background-color: black;
   font-family: "Roboto Flex", sans-serif;
   font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
 }

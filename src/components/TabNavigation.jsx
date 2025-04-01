@@ -9,18 +9,22 @@ const TabNavigation = ({ activeTab, setActiveTab }) => {
     ];
 
     return (
-        <div className="flex flex-wrap gap-3 px-5">
+        <div className="flex flex-wrap gap-3 md:gap-0 px-5">
             {tabs.map((tab) => (
                 <button
-                    key={tab.id}
-                    className={`px-3 md:text-xs text-xs py-2 rounded-full font-semibold transition ${activeTab === tab.id
-                            ? "bg-neutral-800 border-2 border-b-0 border-t-0 text-white"
-                            : "bg-white border border-b-0 border-t-0 text-black"
-                        }`}
-                    onClick={() => setActiveTab(tab.id)}
-                >
-                    {tab.label}
-                </button>
+                key={tab.id}
+                className={`
+                  px-3 py-2 text-xs font-semibold
+                  transition-all duration-300
+                  ${activeTab === tab.id
+                    ? "bg-neutral-950 text-white border-2 border-b-0 border-neutral-950 rounded-t-lg"
+                    : "bg-white text-black border border-b-0 border-neutral-300 rounded-t-lg hover:bg-neutral-100"
+                  }
+                `}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
             ))}
         </div>
     );

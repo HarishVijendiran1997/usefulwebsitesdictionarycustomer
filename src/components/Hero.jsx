@@ -116,7 +116,7 @@ const Hero = ({ searchQuery }) => {
             </Suspense>
 
             <main className="flex-1 px-4 md:px-0 overflow-auto">
-                <div className="sticky top-0 z-10 bg-black pb-2 sm:pt-2">
+                <div className="sticky top-0 z-10 bg-black sm:pt-2">
                     <Suspense fallback={<div className="h-10 bg-neutral-800 animate-pulse"></div>}>
                         <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
                     </Suspense>
