@@ -52,7 +52,7 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
                 <div className="flex items-center gap-2">
                     <FaBook className="text-white relative" size={28} />
                     <FaBook className="text-red-500 absolute -translate-[2px]" size={28} />
-                    <h1 className="text-2xl font-light py-2">Useful Websites Dictionary</h1>
+                    <h1 className="text-2xl font-light py-2">LookLinks</h1>
                 </div>
                 <div className="relative flex-1 max-w-xl mx-4">
                     <input
