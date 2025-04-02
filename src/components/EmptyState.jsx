@@ -1,18 +1,20 @@
 import React from "react";
 
-const EmptyState = ({ activeTab, selectedCategory }) => {
+const EmptyState = ({ activeTab, selectedCategory, isSearch, searchQuery }) => {
     const getMessage = () => {
+        if (isSearch) return `No results found for "${searchQuery}"`;
+        
         switch (activeTab) {
             case "favorites":
-                return "No favorite websites yet. Add some to see them here!";
+                return "No favorite websites yet";
             case "trending":
-                return "No trending websites yet. Start browsing to see popular sites!";
+                return "No trending websites yet";
             case "latest":
-                return "No websites added today. Check back later!";
+                return "No latest websites yet";
             default:
                 return selectedCategory === "All"
-                    ? "No websites found"
-                    : `No websites found in ${selectedCategory} category`;
+                    ? "No websites available"
+                    : `No websites in ${selectedCategory} category`;
         }
     };
 

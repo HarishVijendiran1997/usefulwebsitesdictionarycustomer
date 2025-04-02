@@ -1,29 +1,48 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Hero from "./components/Hero";
 import NavBar from "./components/NavBar";
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
-  // Debounce search query
+  const handleSearch = useCallback((query) => {
+    setSearchQuery(query);
+  }, []);
+
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
-    return () => clearTimeout(timer);
+    if (searchQuery.trim().length === 0) {
+      setDebouncedQuery('');
+      return;
+    }
+
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      setIsSearching(false);
+    }, 350);
+
+    return () => {
+      clearTimeout(timer);
+      setIsSearching(false);
+    };
   }, [searchQuery]);
 
-
-
   return (
-    <div className="flex bg-black flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-black">
       <NavBar
         searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
+        onSearchChange={handleSearch}  // Changed to handleSearch
+        isSearching={isSearching}
       />
 
-      <div className="flex-1 overflow-y-auto">
-        <Hero searchQuery={debouncedQuery} />
-      </div>
+      <main className="flex-1 overflow-y-auto">
+        <Hero 
+          searchQuery={debouncedQuery} 
+          isSearching={isSearching}
+        />
+      </main>
     </div>
   );
 }

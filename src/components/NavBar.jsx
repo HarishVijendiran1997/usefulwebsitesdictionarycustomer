@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaSpinner } from 'react-icons/fa';
 import { db } from '../firebaseConfig';
 import { collection, onSnapshot } from 'firebase/firestore';
 
-const NavBar = ({ searchQuery, setSearchQuery }) => {
+const NavBar = ({ searchQuery, onSearchChange, isSearching }) => {  // Changed to onSearchChange
     const [totalVisits, setTotalVisits] = useState(0);
     const [isOpen, setIsOpen] = useState(true);
 
-    // Load total visits directly from Firestore (realtime)
+    // Load total visits
     useEffect(() => {
         const websitesRef = collection(db, "websites");
         const unsubscribe = onSnapshot(websitesRef, (snapshot) => {
@@ -16,11 +16,10 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
             }, 0);
             setTotalVisits(sum);
         });
-
         return () => unsubscribe();
     }, []);
 
-    // Eye blinking animation (unchanged)
+    // Eye blinking animation
     useEffect(() => {
         let timeout;
         let interval;
@@ -32,16 +31,26 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
             }, 200);
         };
 
-        timeout = setTimeout(() => {
-            blink();
-            interval = setInterval(blink, 5000);
-        }, 3000);
+        const startBlinking = () => {
+            timeout = setTimeout(() => {
+                blink();
+                interval = setInterval(blink, 5000);
+            }, 3000);
+        };
+
+        startBlinking();
 
         return () => {
             clearTimeout(timeout);
             clearInterval(interval);
         };
     }, []);
+
+    const LoadingIndicator = () => (
+        <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
+            <FaSpinner className="animate-spin text-gray-400" />
+        </div>
+    );
 
     return (
         <nav className="bg-black text-white shadow-md px-4 sm:px-6 sticky top-0 z-50">
@@ -63,11 +72,16 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
                         <input
                             type="text"
                             placeholder="Search..."
-                            className="border border-gray-400 rounded-full py-2 px-4 pr-10 w-full focus:outline-none focus:border-red-500 text-white"
+                            className="border border-gray-400 rounded-full py-2 px-4 pr-10 w-full focus:outline-none focus:border-red-500 text-white bg-gray-900"
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => onSearchChange(e.target.value)}  // Changed to onSearchChange
+                            aria-label="Search websites"
                         />
-                        <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                        {isSearching ? (
+                            <LoadingIndicator />
+                        ) : (
+                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                        )}
                     </div>
                     <span className="text-sm font-light pr-2 whitespace-nowrap">
                         Visits: <strong>{totalVisits.toLocaleString()}</strong>
@@ -89,14 +103,21 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
                 </div>
 
                 <div className="relative flex-1 max-w-2xl mx-4">
-                    <input
-                        type="text"
-                        placeholder="Search by title, category or tags..."
-                        className="border border-gray-700 rounded-full py-2 px-4 pr-10 w-full focus:outline-none focus:border-red-500 text-white"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search by title, category or tags..."
+                            className="border border-gray-700 rounded-full py-2 px-4 pr-10 w-full focus:outline-none focus:border-red-500 text-white bg-gray-900"
+                            value={searchQuery}
+                            onChange={(e) => onSearchChange(e.target.value)}  // Changed to onSearchChange
+                            aria-label="Search websites"
+                        />
+                        {isSearching ? (
+                            <LoadingIndicator />
+                        ) : (
+                            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                        )}
+                    </div>
                 </div>
 
                 <div className="min-w-[150px] text-right">

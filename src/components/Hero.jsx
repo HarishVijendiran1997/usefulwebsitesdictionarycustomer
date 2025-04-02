@@ -23,16 +23,47 @@ const Hero = ({ searchQuery }) => {
         latestWebsites,
         latestLoading,
         loadLatestWebsites,
-        unloadTabData
+        unloadTabData,
+        searchAllWebsites // Add this to your WebsitesContext
     } = useWebsites();
 
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [displayCount, setDisplayCount] = useState(15);
+    const [searchResults, setSearchResults] = useState(null);
+    const [isSearching, setIsSearching] = useState(false);
     const observer = useRef();
     const loadMoreRef = useRef();
 
+    // Handle search when searchQuery changes
+    useEffect(() => {
+        if (!searchQuery || searchQuery.trim().length < 2) {
+            setSearchResults(null);
+            return;
+        }
+
+        const performSearch = async () => {
+            setIsSearching(true);
+            try {
+                const results = await searchAllWebsites(searchQuery);
+                setSearchResults(results);
+            } catch (error) {
+                console.error("Search error:", error);
+                setSearchResults([]);
+            }
+            setIsSearching(false);
+        };
+
+        const timer = setTimeout(performSearch, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery, searchAllWebsites]);
+
     // Handle tab change
     const handleTabChange = useCallback((tab) => {
+        if (activeTab === tab) return;
+        
+        // Clear search results when changing tabs
+        setSearchResults(null);
+        
         // Unload data from previous tab if needed
         if (activeTab === "trending" || activeTab === "latest") {
             unloadTabData(activeTab);
@@ -50,27 +81,23 @@ const Hero = ({ searchQuery }) => {
 
     // Memoized filtered websites (for all and favorites tabs)
     const filteredWebsites = useMemo(() => {
+        if (searchResults !== null) return []; // Skip when showing search results
+        
         let filtered = selectedCategory === "All"
             ? websites
             : websites.filter(website => website.category.toLowerCase() === selectedCategory.toLowerCase());
 
-        if (searchQuery.trim() && activeTab !== "trending" && activeTab !== "latest") {
-            const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(website =>
-                website.title.toLowerCase().includes(query) ||
-                website.category.toLowerCase().includes(query) ||
-                (website.tags && website.tags.some(tag => tag.toLowerCase().includes(query)))
-            );
-        }
-
         if (activeTab === "favorites") {
-            return filtered.filter(website => favorites.includes(website.id));
+            filtered = filtered.filter(website => favorites.includes(website.id));
         }
+        
         return filtered;
-    }, [websites, selectedCategory, searchQuery, activeTab, favorites]);
+    }, [websites, selectedCategory, activeTab, favorites, searchResults]);
 
     // Displayed websites
     const displayedWebsites = useMemo(() => {
+        if (searchResults !== null) return searchResults;
+        
         switch (activeTab) {
             case "trending":
                 return trendingWebsites;
@@ -81,10 +108,12 @@ const Hero = ({ searchQuery }) => {
             default: // "all" tab
                 return filteredWebsites.slice(0, displayCount);
         }
-    }, [activeTab, trendingWebsites, latestWebsites, filteredWebsites, displayCount]);
+    }, [activeTab, trendingWebsites, latestWebsites, filteredWebsites, displayCount, searchResults]);
 
     // Loading state
     const isLoading = useMemo(() => {
+        if (isSearching) return true;
+        
         switch (activeTab) {
             case "trending":
                 return trendingLoading;
@@ -95,22 +124,22 @@ const Hero = ({ searchQuery }) => {
             default: // "all" tab
                 return loading || loadingMore;
         }
-    }, [activeTab, trendingLoading, latestLoading, loading, loadingMore]);
+    }, [activeTab, trendingLoading, latestLoading, loading, loadingMore, isSearching]);
 
     // Infinite scroll observer callback
     const handleObserver = useCallback((entries) => {
         const [target] = entries;
-        if (target.isIntersecting && !loadingMore && !noMoreData && activeTab === "all") {
+        if (target.isIntersecting && !loadingMore && !noMoreData && activeTab === "all" && searchResults === null) {
             setDisplayCount(prev => prev + 15);
             if (displayCount >= filteredWebsites.length) {
                 loadMoreWebsites();
             }
         }
-    }, [loadingMore, noMoreData, activeTab, displayCount, filteredWebsites.length, loadMoreWebsites]);
+    }, [loadingMore, noMoreData, activeTab, displayCount, filteredWebsites.length, loadMoreWebsites, searchResults]);
 
     // Set up intersection observer
     useEffect(() => {
-        if (activeTab !== "all") return;
+        if (activeTab !== "all" || searchResults !== null) return;
 
         const option = {
             root: null,
@@ -124,14 +153,14 @@ const Hero = ({ searchQuery }) => {
         return () => {
             if (observer.current) observer.current.disconnect();
         };
-    }, [handleObserver, activeTab, filteredWebsites]);
+    }, [handleObserver, activeTab, filteredWebsites, searchResults]);
 
     // Reset display count when filters change
     useEffect(() => {
-        if (activeTab === "all") {
+        if (activeTab === "all" && searchResults === null) {
             setDisplayCount(15);
         }
-    }, [activeTab, selectedCategory, searchQuery]);
+    }, [activeTab, selectedCategory, searchResults]);
 
     const handleCategorySelection = (category) => {
         setSelectedCategory(category);
@@ -147,6 +176,10 @@ const Hero = ({ searchQuery }) => {
     };
 
     const getSectionTitle = () => {
+        if (searchResults !== null) {
+            return `Search Results${searchQuery ? ` for "${searchQuery}"` : ''}`;
+        }
+        
         switch (activeTab) {
             case "all":
                 return selectedCategory;
@@ -160,7 +193,37 @@ const Hero = ({ searchQuery }) => {
                 return "";
         }
     };
-
+    // const SearchDebugger = ({ searchQuery }) => {
+    //     const { searchAllWebsites } = useWebsites();
+    //     const [results, setResults] = useState([]);
+    
+    //     useEffect(() => {
+    //         if (searchQuery && searchQuery.trim().length >= 2) {
+    //             searchAllWebsites(searchQuery).then(setResults);
+    //         } else {
+    //             setResults([]);
+    //         }
+    //     }, [searchQuery, searchAllWebsites]);
+    
+    //     if (!searchQuery || searchQuery.trim().length < 2) return null;
+    
+    //     return (
+    //         <div className="bg-red-900 bg-opacity-10 p-4 mb-4">
+    //             <h3 className="font-bold text-white">Search Debug</h3>
+    //             <p className="text-white">Query: "{searchQuery}"</p>
+    //             <p className="text-white">Found: {results.length} results</p>
+    //             <div className="mt-2">
+    //                 {results.map(website => (
+    //                     <div key={website.id} className="text-sm text-white">
+    //                         {website.title} - 
+    //                         Tags: {website.tags.join(', ')}
+    //                     </div>
+    //                 ))}
+    //             </div>
+    //         </div>
+    //     );
+    // };
+    
     return (
         <div className="bg-neutral-950 w-full sm:h-[calc(100vh-76px)] h-screen flex flex-col sm:flex-row overflow-hidden"
             style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
@@ -192,7 +255,7 @@ const Hero = ({ searchQuery }) => {
                             <h2 className="text-2xl font-bold text-white capitalize">
                                 {getSectionTitle()}
                             </h2>
-
+                            {/* {searchQuery && <SearchDebugger searchQuery={searchQuery} />} */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-4">
                                 <Suspense fallback={<div className="col-span-3 text-center py-10">Loading websites...</div>}>
                                     {displayedWebsites.length > 0 ? (
@@ -206,13 +269,18 @@ const Hero = ({ searchQuery }) => {
                                             />
                                         ))
                                     ) : (
-                                        <EmptyState activeTab={activeTab} selectedCategory={selectedCategory} />
+                                        <EmptyState 
+                                            activeTab={activeTab} 
+                                            selectedCategory={selectedCategory}
+                                            isSearch={searchResults !== null}
+                                            searchQuery={searchQuery}
+                                        />
                                     )}
                                 </Suspense>
                             </div>
 
-                            {/* Infinite scroll trigger */}
-                            {activeTab === "all" && !noMoreData && (
+                            {/* Infinite scroll trigger - only for 'all' tab when not searching */}
+                            {activeTab === "all" && !noMoreData && searchResults === null && (
                                 <div ref={loadMoreRef} className="h-10 mt-5 flex justify-center items-center">
                                     {loadingMore && (
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -220,13 +288,14 @@ const Hero = ({ searchQuery }) => {
                                 </div>
                             )}
 
-                            {noMoreData && activeTab === "all" && (
+                            {noMoreData && activeTab === "all" && searchResults === null && (
                                 <div className="text-center py-4 text-neutral-400">
                                     You've reached the end
                                 </div>
                             )}
                         </section>
                     )}
+                    
                 </div>
             </main>
         </div>

@@ -18,6 +18,7 @@ import {
 const WebsitesContext = createContext();
 
 const WebsitesProvider = ({ children }) => {
+    // Main websites state
     const [activeTab, setActiveTab] = useState("all");
     const [websites, setWebsites] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -36,6 +37,7 @@ const WebsitesProvider = ({ children }) => {
     const [latestLoading, setLatestLoading] = useState(false);
     const [latestLoaded, setLatestLoaded] = useState(false);
 
+    // Favorites with localStorage persistence
     const [favorites, setFavorites] = useState(() => {
         try {
             if (typeof window !== 'undefined') {
@@ -49,7 +51,7 @@ const WebsitesProvider = ({ children }) => {
         }
     });
 
-    // Persist favorites
+    // Persist favorites to localStorage
     useEffect(() => {
         try {
             localStorage.setItem('websiteFavorites', JSON.stringify(favorites));
@@ -79,11 +81,6 @@ const WebsitesProvider = ({ children }) => {
 
             const documentSnapshots = await getDocs(websitesQuery);
             
-            if (documentSnapshots.empty) {
-                setNoMoreData(true);
-                return;
-            }
-
             const newWebsites = documentSnapshots.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -100,7 +97,7 @@ const WebsitesProvider = ({ children }) => {
         }
     }, []);
 
-    // Load more websites
+    // Load more websites (pagination)
     const loadMoreWebsites = useCallback(async () => {
         if (!lastVisible || loadingMore || noMoreData) return;
         
@@ -116,11 +113,6 @@ const WebsitesProvider = ({ children }) => {
 
             const documentSnapshots = await getDocs(websitesQuery);
             
-            if (documentSnapshots.empty) {
-                setNoMoreData(true);
-                return;
-            }
-
             const newWebsites = documentSnapshots.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -137,7 +129,7 @@ const WebsitesProvider = ({ children }) => {
         }
     }, [lastVisible, loadingMore, noMoreData]);
 
-    // Load trending websites
+    // Load trending websites (realtime updates)
     const loadTrendingWebsites = useCallback(async () => {
         if (trendingLoaded) return;
         
@@ -166,7 +158,7 @@ const WebsitesProvider = ({ children }) => {
         }
     }, [trendingLoaded]);
 
-    // Load latest websites
+    // Load latest websites (realtime updates)
     const loadLatestWebsites = useCallback(async () => {
         if (latestLoaded) return;
         
@@ -198,7 +190,7 @@ const WebsitesProvider = ({ children }) => {
         }
     }, [latestLoaded]);
 
-    // Unload data when switching away from tabs
+    // Unload tab-specific data when switching tabs
     const unloadTabData = useCallback((tab) => {
         if (tab === "trending") {
             setTrendingWebsites([]);
@@ -209,11 +201,26 @@ const WebsitesProvider = ({ children }) => {
         }
     }, []);
 
-    // Initial load
+    const updateAllTitles = async () => {
+        const snapshot = await getDocs(collection(db, "websites"));
+        const batch = writeBatch(db);
+        
+        snapshot.forEach(doc => {
+            batch.update(doc.ref, {
+                titleLowercase: doc.data().title.toLowerCase()
+            });
+        });
+        
+        await batch.commit();
+    };
+
+    // Initial data load
     useEffect(() => {
         loadInitialWebsites();
+        updateAllTitles()
     }, [loadInitialWebsites]);
 
+    // Update visit count both locally and in Firestore
     const updateVisitCount = useCallback(async (websiteId) => {
         try {
             setWebsites(prev => prev.map(website =>
@@ -231,6 +238,35 @@ const WebsitesProvider = ({ children }) => {
         }
     }, []);
 
+    // Enhanced search functionality
+    const searchAllWebsites = useCallback(async (searchTerm) => {
+        const term = searchTerm.trim().toLowerCase(); // Convert search to lowercase
+        if (term.length < 2) return [];
+    
+        try {
+            const websitesRef = collection(db, "websites");
+            const snapshot = await getDocs(websitesRef);
+            
+            return snapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .filter(website => {
+                    // Case-insensitive tag matching
+                    const tagMatch = website.tags?.some(tag => 
+                        tag.toLowerCase().includes(term)
+                    );
+                    
+                    // Case-insensitive title matching
+                    const titleMatch = website.title.toLowerCase().includes(term);
+                    
+                    return tagMatch || titleMatch;
+                })
+                .sort((a, b) => (b.visitedCount || 0) - (a.visitedCount || 0));
+        } catch (error) {
+            console.error("Search error:", error);
+            return [];
+        }
+    }, []);
+    // Memoized context value
     const value = useMemo(() => ({
         activeTab,
         setActiveTab,
@@ -249,7 +285,8 @@ const WebsitesProvider = ({ children }) => {
         latestWebsites,
         latestLoading,
         loadLatestWebsites,
-        unloadTabData
+        unloadTabData,
+        searchAllWebsites
     }), [
         activeTab,
         websites,
@@ -267,7 +304,8 @@ const WebsitesProvider = ({ children }) => {
         latestWebsites,
         latestLoading,
         loadLatestWebsites,
-        unloadTabData
+        unloadTabData,
+        searchAllWebsites
     ]);
 
     return (
