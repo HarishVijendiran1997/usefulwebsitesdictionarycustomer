@@ -22,6 +22,10 @@ const WebsitesProvider = ({ children }) => {
     const [error, setError] = useState(null);
     const [lastVisible, setLastVisible] = useState(null);
     const [noMoreData, setNoMoreData] = useState(false);
+    const resetPagination = useCallback(() => {
+        setLastVisible(null);
+        setNoMoreData(false);
+    }, []);
     
     const [favorites, setFavorites] = useState(() => {
         try {
