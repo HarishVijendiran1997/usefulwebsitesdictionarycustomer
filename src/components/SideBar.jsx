@@ -1,5 +1,6 @@
 import React from 'react';
 import { useWebsites } from '../contexts/WebsitesContext';
+import { categories as predefinedCategories } from '../utils/Categories'; // Predefined categories file
 import {
     FaRobot, FaBriefcase, FaMotorcycle, FaTshirt, FaCode,
     FaBitcoin, FaPalette, FaGraduationCap, FaFilm, FaDumbbell,
@@ -11,6 +12,19 @@ import {
 } from 'react-icons/fa';
 
 const SideBar = ({ selectedCategory, onCategorySelect, setSelectedCategory }) => {
+    const { websites } = useWebsites(); // Get the websites data
+
+    // Step 1: Dynamically generate categories based on websites
+    const dynamicCategories = ['All', ...new Set(websites.map(website => website.category))]
+        .sort((a, b) => {
+            if (a === 'All') return -1; // Keep 'All' at the top
+            if (b === 'All') return 1;
+            return a.localeCompare(b); // Sort other categories alphabetically
+        });
+
+    // Step 2: Merge predefined categories with dynamic categories (keeping 'All' at the top)
+    const categories = [...new Set([...predefinedCategories, ...dynamicCategories])];
+
     const categoryIcons = {
         "AI & Robots": <FaRobot className="mr-2" />,
         "Business": <FaBriefcase className="mr-2" />,
@@ -45,16 +59,6 @@ const SideBar = ({ selectedCategory, onCategorySelect, setSelectedCategory }) =>
         "Work & Productivity": <FaTasks className="mr-2" />,
     };
 
-    const { websites } = useWebsites();
-
-    // Get unique categories and sort them in ascending order
-    const categories = ['All', ...new Set(websites.map(website => website.category))]
-        .sort((a, b) => {
-            if (a === 'All') return -1; // Keep 'All' at the top
-            if (b === 'All') return 1;
-            return a.localeCompare(b); // Sort other categories alphabetically
-        });
-
     const handleCategory = (e) => {
         const category = e.currentTarget.textContent.trim();
         setSelectedCategory(category);
@@ -76,7 +80,7 @@ const SideBar = ({ selectedCategory, onCategorySelect, setSelectedCategory }) =>
                             key={index}
                             onClick={handleCategory}
                             className={`
-                                flex items-center p-2 rounded-lg  cursor-pointer 
+                                flex items-center p-2 rounded-lg cursor-pointer 
                                 hover:bg-neutral-800 active:bg-neutral-700 transition-colors
                                 ${selectedCategory === category ? 'bg-gray-700 md:bg-neutral-700 font-semibold' : 'font-semibold'}
                                 whitespace-nowrap
