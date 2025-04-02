@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import { useWebsites } from '../contexts/WebsitesContext';
-import heroLogo from '../assets/LOOKLINKSLOGO.png';
 
 const NavBar = ({ searchQuery, setSearchQuery }) => {
     const { websites } = useWebsites();
     const [totalVisits, setTotalVisits] = useState(0);
+    const [isOpen, setIsOpen] = useState(true);
 
     useEffect(() => {
         if (websites?.length > 0) {
@@ -14,14 +14,39 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
         }
     }, [websites]);
 
+    useEffect(() => {
+        let timeout;
+        let interval;
+
+        const blink = () => {
+            setIsOpen(false);
+            timeout = setTimeout(() => {
+                setIsOpen(true);
+            }, 200); // Blink duration (eyes closed)
+        };
+
+        // Initial delay before first blink
+        timeout = setTimeout(() => {
+            blink();
+            // Set up regular blinking
+            interval = setInterval(blink, 5000); // Blink every 5 seconds
+        }, 3000);
+
+        return () => {
+            clearTimeout(timeout);
+            clearInterval(interval);
+        };
+    }, []);
+
     return (
         <nav className="bg-black text-white shadow-md px-4 sm:px-6 sticky top-0 z-50">
             {/* Mobile Layout */}
             <div className="flex sm:hidden flex-col items-center">
                 <div className="flex flex-col items-center py-2">
                     <img
-                        src={heroLogo}
-                        className="h-8 mb-2 w-auto object-contain"
+                        src={isOpen ? "/looklinksopen.png" : "/looklinksclosed.png"}
+                        alt="LookLinks Logo"
+                        className="h-10 w-auto transition-all duration-200 ease-in-out"
                     />
                     <span className="text-sm font-light text-neutral-300">
                         Discover the Best Online Resources
@@ -48,17 +73,17 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
             {/* Desktop Layout */}
             <div className="hidden sm:flex justify-between items-center w-full gap-4">
                 <div className="flex items-center gap-2 min-w-[100px]">
-                    <div className='flex flex-col items-center justify-center mt-3'>
-
+                    <div className="flex flex-col items-center justify-center mt-3">
                         <img
-                            src={heroLogo}
-                            className="h-8 w-auto object-contain text-center"
+                            src={isOpen ? "/looklinksopen.png" : "/looklinksclosed.png"}
+                            alt="LookLinks Logo"
+                            className="h-12 w-auto transition-all duration-200 ease-in-out"
                         />
-                        <p className='text-xs text-neutral-400'>Discover. Explore. Connect.</p>
+                        <p className="text-xs text-neutral-400">Discover. Explore. Connect.</p>
                     </div>
                 </div>
 
-                <div className="relative flex-1 max-w-2xl mx-4 ">
+                <div className="relative flex-1 max-w-2xl mx-4">
                     <input
                         type="text"
                         placeholder="Search by title, category or tags..."
