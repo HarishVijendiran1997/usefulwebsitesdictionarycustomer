@@ -1,19 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
-import { useWebsites } from '../contexts/WebsitesContext';
+import { db } from '../firebaseConfig';
+import { collection, onSnapshot } from 'firebase/firestore';
 
 const NavBar = ({ searchQuery, setSearchQuery }) => {
-    const { websites } = useWebsites();
     const [totalVisits, setTotalVisits] = useState(0);
     const [isOpen, setIsOpen] = useState(true);
 
+    // Load total visits directly from Firestore (realtime)
     useEffect(() => {
-        if (websites?.length > 0) {
-            const sum = websites.reduce((total, website) => total + (website.visitedCount || 0), 0);
+        const websitesRef = collection(db, "websites");
+        const unsubscribe = onSnapshot(websitesRef, (snapshot) => {
+            const sum = snapshot.docs.reduce((total, doc) => {
+                return total + (doc.data().visitedCount || 0);
+            }, 0);
             setTotalVisits(sum);
-        }
-    }, [websites]);
+        });
 
+        return () => unsubscribe();
+    }, []);
+
+    // Eye blinking animation (unchanged)
     useEffect(() => {
         let timeout;
         let interval;
@@ -22,14 +29,12 @@ const NavBar = ({ searchQuery, setSearchQuery }) => {
             setIsOpen(false);
             timeout = setTimeout(() => {
                 setIsOpen(true);
-            }, 200); // Blink duration (eyes closed)
+            }, 200);
         };
 
-        // Initial delay before first blink
         timeout = setTimeout(() => {
             blink();
-            // Set up regular blinking
-            interval = setInterval(blink, 5000); // Blink every 5 seconds
+            interval = setInterval(blink, 5000);
         }, 3000);
 
         return () => {
