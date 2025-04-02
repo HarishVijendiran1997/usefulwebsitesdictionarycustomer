@@ -7,26 +7,19 @@ import {
     doc,
     increment,
     updateDoc,
-    limit,
-    startAfter,
+    onSnapshot,
     getDocs
 } from "firebase/firestore";
 
 const WebsitesContext = createContext();
 
 const WebsitesProvider = ({ children }) => {
+    
+    
     const [activeTab, setActiveTab] = useState("all");
     const [websites, setWebsites] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState(null);
-    const [lastVisible, setLastVisible] = useState(null);
-    const [noMoreData, setNoMoreData] = useState(false);
-    const resetPagination = useCallback(() => {
-        setLastVisible(null);
-        setNoMoreData(false);
-    }, []);
-    
     const [favorites, setFavorites] = useState(() => {
         try {
             if (typeof window !== 'undefined') {
@@ -57,81 +50,43 @@ const WebsitesProvider = ({ children }) => {
         );
     }, []);
 
-    // Load initial websites
-    const loadInitialWebsites = useCallback(async () => {
-        try {
-            setLoading(true);
-            const websitesRef = collection(db, "websites");
-            const websitesQuery = query(
-                websitesRef,
-                orderBy("title"),
-                limit(15)
-            );
-
-            const documentSnapshots = await getDocs(websitesQuery);
-            
-            if (documentSnapshots.empty) {
-                setNoMoreData(true);
-                return;
-            }
-
-            const newWebsites = documentSnapshots.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            setWebsites(newWebsites);
-            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
-            setNoMoreData(newWebsites.length < 15);
-        } catch (error) {
-            console.error("Firestore error:", error);
-            setError("Failed to load websites");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    // Load more websites
-    const loadMoreWebsites = useCallback(async () => {
-        if (!lastVisible || loadingMore || noMoreData) return;
-        
-        try {
-            setLoadingMore(true);
-            const websitesRef = collection(db, "websites");
-            const websitesQuery = query(
-                websitesRef,
-                orderBy("title"),
-                startAfter(lastVisible),
-                limit(15)
-            );
-
-            const documentSnapshots = await getDocs(websitesQuery);
-            
-            if (documentSnapshots.empty) {
-                setNoMoreData(true);
-                return;
-            }
-
-            const newWebsites = documentSnapshots.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            setWebsites(prev => [...prev, ...newWebsites]);
-            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
-            setNoMoreData(newWebsites.length < 15);
-        } catch (error) {
-            console.error("Firestore error:", error);
-            setError("Failed to load more websites");
-        } finally {
-            setLoadingMore(false);
-        }
-    }, [lastVisible, loadingMore, noMoreData]);
-
-    // Initial load
+    // Fetch websites
     useEffect(() => {
-        loadInitialWebsites();
-    }, [loadInitialWebsites]);
+        const websitesRef = collection(db, "websites");
+        const websitesQuery = query(websitesRef, orderBy("title"));
+
+        const unsubscribe = onSnapshot(
+            websitesQuery,
+            (snapshot) => {
+                const data = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setWebsites(data);
+                setLoading(false);
+            },
+            (error) => {
+                console.error("Firestore error:", error);
+                setError("Failed to load websites");
+                setLoading(false);
+            }
+        );
+
+        // Initial load from cache
+        getDocs(websitesQuery, { source: 'cache' })
+            .then(cachedSnapshot => {
+                if (!cachedSnapshot.empty) {
+                    const cachedData = cachedSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    setWebsites(cachedData);
+                }
+            })
+            .catch(() => { }); // Ignore cache errors
+
+        return () => unsubscribe();
+    }, []);
 
     const updateVisitCount = useCallback(async (websiteId) => {
         try {
@@ -167,27 +122,12 @@ const WebsitesProvider = ({ children }) => {
         setActiveTab,
         websites,
         loading,
-        loadingMore,
         error,
-        noMoreData,
         updateVisitCount,
         favorites,
         toggleFavorite,
-        getTodaysWebsites,
-        loadMoreWebsites
-    }), [
-        activeTab,
-        websites,
-        loading,
-        loadingMore,
-        error,
-        noMoreData,
-        updateVisitCount,
-        favorites,
-        toggleFavorite,
-        getTodaysWebsites,
-        loadMoreWebsites
-    ]);
+        getTodaysWebsites 
+    }), [activeTab, websites, loading, error, updateVisitCount, favorites, toggleFavorite]);
 
     return (
         <WebsitesContext.Provider value={value}>
