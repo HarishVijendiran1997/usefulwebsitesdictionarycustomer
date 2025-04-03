@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { FaSearch, FaSpinner } from 'react-icons/fa';
+import { FaSearch } from 'react-icons/fa';
 import { db } from '../firebaseConfig';
 import { collection, onSnapshot } from 'firebase/firestore';
+import LoadingIndicator from './LoadingIndicator';
 
 const NavBar = ({ searchQuery, onSearchChange, isSearching }) => {  // Changed to onSearchChange
     const [totalVisits, setTotalVisits] = useState(0);
@@ -45,12 +46,6 @@ const NavBar = ({ searchQuery, onSearchChange, isSearching }) => {  // Changed t
             clearInterval(interval);
         };
     }, []);
-
-    const LoadingIndicator = () => (
-        <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
-            <FaSpinner className="animate-spin text-gray-400" />
-        </div>
-    );
 
     return (
         <nav className="bg-black text-white shadow-md px-4 sm:px-6 sticky top-0 z-50">
