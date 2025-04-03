@@ -58,7 +58,7 @@ const NavBar = ({ searchQuery, onSearchChange, isSearching }) => {  // Changed t
             <div className="flex sm:hidden flex-col items-center">
                 <div className="flex flex-col items-center py-2">
                     <img
-                        src={isOpen ? "/looklinksopen.png" : "/looklinksclosed.png"}
+                        src={isOpen ? "/looklinksopen.webp" : "/looklinksclosed.webp"}
                         alt="LookLinks Logo"
                         className="h-10 w-auto transition-all duration-200 ease-in-out"
                     />
@@ -94,7 +94,7 @@ const NavBar = ({ searchQuery, onSearchChange, isSearching }) => {  // Changed t
                 <div className="flex items-center gap-2 min-w-[100px]">
                     <div className="flex flex-col items-center justify-center mt-3">
                         <img
-                            src={isOpen ? "/looklinksopen.png" : "/looklinksclosed.png"}
+                            src={isOpen ? "/looklinksopen.webp" : "/looklinksclosed.webp"}
                             alt="LookLinks Logo"
                             className="h-12 w-auto transition-all duration-200 ease-in-out"
                         />
