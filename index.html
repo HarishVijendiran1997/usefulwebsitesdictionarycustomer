@@ -20,12 +20,34 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <!-- Favicons -->
+    <!-- Replace your favicon section with this optimized version -->
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <!-- Fallback -->
+    <!-- Modern browsers -->
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+
+    <!-- Google's Preferred Format (192x192) -->
     <link
       rel="icon"
-      type="png/svg+xml"
-      href="./src/assets/looklinksfavi64.png"
+      type="image/png"
+      href="./icons/icon-192x192.png"
+      sizes="192x192"
     />
-    <link rel="apple-touch-icon" href="./src/assets/looklinksfavi180.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="./icons/icon-512x512.png"
+      sizes="512x512"
+    />
+
+    <!-- Maskable PWA Icon (helps with Google's circle) -->
+    <link rel="maskable-icon" href="./public/maskable-icon.png" sizes="192x192" />
+
+    <link
+      rel="manifest"
+      href="./manifest.json"
+      crossorigin="use-credentials"
+    />
 
     <!-- Canonical -->
     <link rel="canonical" href="https://looklinks.com/" />
@@ -64,10 +86,8 @@
 
     <!-- PWA & Mobile -->
     <meta name="theme-color" content="#000000" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes">
 
-    <!-- Add to manifest.json for proper PWA support -->
-    <link rel="manifest" href="/manifest.json" />
 
     <!-- Security -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
