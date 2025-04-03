@@ -1,3 +1,4 @@
-User-agent: *
+User-agent: Googlebot
 Allow: /
+Crawl-delay: 10
 Sitemap: https://looklinks.com/sitemap.xml
