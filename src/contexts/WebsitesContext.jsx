@@ -27,7 +27,7 @@ const WebsitesProvider = ({ children }) => {
     const [error, setError] = useState(null);
     const [lastVisible, setLastVisible] = useState(null);
     const [noMoreData, setNoMoreData] = useState(false);
-    
+
     // Trending websites state
     const [trendingWebsites, setTrendingWebsites] = useState([]);
     const [trendingLoading, setTrendingLoading] = useState(false);
@@ -81,7 +81,7 @@ const WebsitesProvider = ({ children }) => {
             );
 
             const documentSnapshots = await getDocs(websitesQuery);
-            
+
             const newWebsites = documentSnapshots.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -101,7 +101,7 @@ const WebsitesProvider = ({ children }) => {
     // Load more websites (pagination)
     const loadMoreWebsites = useCallback(async () => {
         if (!lastVisible || loadingMore || noMoreData) return;
-        
+
         try {
             setLoadingMore(true);
             const websitesRef = collection(db, "websites");
@@ -113,7 +113,7 @@ const WebsitesProvider = ({ children }) => {
             );
 
             const documentSnapshots = await getDocs(websitesQuery);
-            
+
             const newWebsites = documentSnapshots.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -133,7 +133,7 @@ const WebsitesProvider = ({ children }) => {
     // Load trending websites (realtime updates)
     const loadTrendingWebsites = useCallback(async () => {
         if (trendingLoaded) return;
-        
+
         try {
             setTrendingLoading(true);
             const q = query(
@@ -141,7 +141,7 @@ const WebsitesProvider = ({ children }) => {
                 orderBy("visitedCount", "desc"),
                 limit(10)
             );
-            
+
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const data = snapshot.docs.map(doc => ({
                     id: doc.id,
@@ -151,7 +151,7 @@ const WebsitesProvider = ({ children }) => {
                 setTrendingLoading(false);
                 setTrendingLoaded(true);
             });
-            
+
             return unsubscribe;
         } catch (error) {
             console.error("Error loading trending:", error);
@@ -162,18 +162,18 @@ const WebsitesProvider = ({ children }) => {
     // Load latest websites (realtime updates)
     const loadLatestWebsites = useCallback(async () => {
         if (latestLoaded) return;
-        
+
         try {
             setLatestLoading(true);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            
+
             const q = query(
                 collection(db, "websites"),
                 where("createdAt", ">=", Timestamp.fromDate(today)),
                 orderBy("createdAt", "desc")
             );
-            
+
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const data = snapshot.docs.map(doc => ({
                     id: doc.id,
@@ -183,7 +183,7 @@ const WebsitesProvider = ({ children }) => {
                 setLatestLoading(false);
                 setLatestLoaded(true);
             });
-            
+
             return unsubscribe;
         } catch (error) {
             console.error("Error loading latest:", error);
@@ -205,13 +205,13 @@ const WebsitesProvider = ({ children }) => {
     const updateAllTitles = async () => {
         const snapshot = await getDocs(collection(db, "websites"));
         const batch = writeBatch(db);
-        
+
         snapshot.forEach(doc => {
             batch.update(doc.ref, {
                 titleLowercase: doc.data().title.toLowerCase()
             });
         });
-        
+
         await batch.commit();
     };
 
@@ -238,27 +238,31 @@ const WebsitesProvider = ({ children }) => {
             setError("Failed to update visit count");
         }
     }, []);
-
+    const resetScrollStates = useCallback(() => {
+        setLastVisible(null);
+        setNoMoreData(false);
+        setLoadingMore(false);
+    }, []);
     // Enhanced search functionality
     const searchAllWebsites = useCallback(async (searchTerm) => {
         const term = searchTerm.trim().toLowerCase(); // Convert search to lowercase
         if (term.length < 2) return [];
-    
+
         try {
             const websitesRef = collection(db, "websites");
             const snapshot = await getDocs(websitesRef);
-            
+
             return snapshot.docs
                 .map(doc => ({ id: doc.id, ...doc.data() }))
                 .filter(website => {
                     // Case-insensitive tag matching
-                    const tagMatch = website.tags?.some(tag => 
+                    const tagMatch = website.tags?.some(tag =>
                         tag.toLowerCase().includes(term)
                     );
-                    
+
                     // Case-insensitive title matching
                     const titleMatch = website.title.toLowerCase().includes(term);
-                    
+
                     return tagMatch || titleMatch;
                 })
                 .sort((a, b) => (b.visitedCount || 0) - (a.visitedCount || 0));
@@ -287,7 +291,8 @@ const WebsitesProvider = ({ children }) => {
         latestLoading,
         loadLatestWebsites,
         unloadTabData,
-        searchAllWebsites
+        searchAllWebsites,
+        resetScrollStates
     }), [
         activeTab,
         websites,
@@ -306,7 +311,8 @@ const WebsitesProvider = ({ children }) => {
         latestLoading,
         loadLatestWebsites,
         unloadTabData,
-        searchAllWebsites
+        searchAllWebsites,
+        resetScrollStates
     ]);
 
     return (
