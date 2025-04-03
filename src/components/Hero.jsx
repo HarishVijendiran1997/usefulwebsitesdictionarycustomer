@@ -223,83 +223,85 @@ const Hero = ({ searchQuery }) => {
     //         </div>
     //     );
     // };
-    
     return (
         <div className="bg-neutral-950 w-full sm:h-[calc(100vh-76px)] h-screen flex flex-col sm:flex-row overflow-hidden"
-            style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
+    style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
 
-            <Suspense fallback={<div className="flex justify-center items-center h-64 p-10">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-            </div>}>
-                <SideBar
+    {/* Sidebar - fixed height */}
+    <Suspense fallback={<div className="flex justify-center items-center h-64 p-10">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+    </div>}>
+      <SideBar
+        selectedCategory={selectedCategory}
+        onCategorySelect={handleCategorySelection}
+        setSelectedCategory={setSelectedCategory}
+      />
+    </Suspense>
+
+    {/* Main content area - matches sidebar height */}
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Sticky header - fixed height */}
+      <div className="sticky top-0 z-10 bg-black sm:pt-2 shrink-0">
+        <Suspense fallback={<div className="h-10 bg-neutral-800 animate-pulse"></div>}>
+          <TabNavigation activeTab={activeTab} setActiveTab={handleTabChange} />
+        </Suspense>
+      </div>
+
+      {/* Scrollable websites container */}
+      <div className="flex-1 overflow-y-auto px-4 xl:ml-4">
+        {isLoading && displayedWebsites.length === 0 ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          </div>
+        ) : (
+          <div className="w-full max-w-screen-xl mx-auto bg-neutral-950 py-4 px-2 rounded-lg">
+            <h2 className="text-2xl font-bold text-white capitalize">
+              {getSectionTitle()}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-4">
+              <Suspense fallback={<div className="col-span-3 text-center py-10">Loading websites...</div>}>
+                {displayedWebsites.length > 0 ? (
+                  displayedWebsites.map(site => (
+                    <WebsiteCard
+                      key={site.id}
+                      site={site}
+                      isFavorite={favorites.includes(site.id)}
+                      onToggleFavorite={toggleFavorite}
+                      onWebsiteClick={handleWebsiteClick}
+                    />
+                  ))
+                ) : (
+                  <EmptyState 
+                    activeTab={activeTab} 
                     selectedCategory={selectedCategory}
-                    onCategorySelect={handleCategorySelection}
-                    setSelectedCategory={setSelectedCategory}
-                />
-            </Suspense>
+                    isSearch={searchResults !== null}
+                    searchQuery={searchQuery}
+                  />
+                )}
+              </Suspense>
+            </div>
 
-            <main className="flex-1 px-4 md:px-0 overflow-auto">
-                <div className="sticky top-0 z-10 bg-black sm:pt-2">
-                    <Suspense fallback={<div className="h-10 bg-neutral-800 animate-pulse"></div>}>
-                        <TabNavigation activeTab={activeTab} setActiveTab={handleTabChange} />
-                    </Suspense>
-                </div>
+            {/* Infinite scroll trigger */}
+            {activeTab === "all" && !noMoreData && searchResults === null && (
+              <div ref={loadMoreRef} className="h-10 mt-5 flex justify-center items-center">
+                {loadingMore && (
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                )}
+              </div>
+            )}
 
-                <div className="flex-1 overflow-y-auto xl:ml-4">
-                    {isLoading && displayedWebsites.length === 0 ? (
-                        <div className="flex justify-center items-center h-64">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-                        </div>
-                    ) : (
-                        <section className="w-full max-w-screen-xl mx-auto bg-neutral-950 py-4 px-2 rounded-lg">
-                            <h2 className="text-2xl font-bold text-white capitalize">
-                                {getSectionTitle()}
-                            </h2>
-                            {/* {searchQuery && <SearchDebugger searchQuery={searchQuery} />} */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-4">
-                                <Suspense fallback={<div className="col-span-3 text-center py-10">Loading websites...</div>}>
-                                    {displayedWebsites.length > 0 ? (
-                                        displayedWebsites.map(site => (
-                                            <WebsiteCard
-                                                key={site.id}
-                                                site={site}
-                                                isFavorite={favorites.includes(site.id)}
-                                                onToggleFavorite={toggleFavorite}
-                                                onWebsiteClick={handleWebsiteClick}
-                                            />
-                                        ))
-                                    ) : (
-                                        <EmptyState 
-                                            activeTab={activeTab} 
-                                            selectedCategory={selectedCategory}
-                                            isSearch={searchResults !== null}
-                                            searchQuery={searchQuery}
-                                        />
-                                    )}
-                                </Suspense>
-                            </div>
-
-                            {/* Infinite scroll trigger - only for 'all' tab when not searching */}
-                            {activeTab === "all" && !noMoreData && searchResults === null && (
-                                <div ref={loadMoreRef} className="h-10 mt-5 flex justify-center items-center">
-                                    {loadingMore && (
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                                    )}
-                                </div>
-                            )}
-
-                            {noMoreData && activeTab === "all" && searchResults === null && (
-                                <div className="text-center py-4 text-neutral-400">
-                                    You've reached the end
-                                </div>
-                            )}
-                        </section>
-                    )}
-                    
-                </div>
-            </main>
-        </div>
+            {noMoreData && activeTab === "all" && searchResults === null && (
+              <div className="text-center py-4 text-neutral-400">
+                You've reached the end
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
     );
 };
 
 export default Hero;
+    
