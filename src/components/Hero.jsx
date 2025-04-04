@@ -42,6 +42,27 @@
                 }
             };
         }, []);
+
+        // Reset scroll states when category or tab changes
+    useEffect(() => {
+        const resetScroll = () => {
+            if (observer.current) {
+                observer.current.disconnect();
+            }
+            resetScrollStates();
+            setDisplayCount(15);
+        };
+
+        // Reset when category changes (for 'all' tab)
+        if (activeTab === 'all') {
+            resetScroll();
+        }
+
+        // Reset when tab changes (unless we're coming from search)
+        if (searchResults === null) {
+            resetScroll();
+        }
+    }, [selectedCategory, activeTab, searchResults, resetScrollStates]);
     
         // Handle search
         useEffect(() => {
@@ -72,15 +93,6 @@
     
             setSearchResults(null);
             
-            if (tab === "all") {
-                resetScrollStates();
-                setDisplayCount(15);
-            } else {
-                if (observer.current) {
-                    observer.current.disconnect();
-                }
-            }
-    
             if (activeTab === "trending" || activeTab === "latest") {
                 unloadTabData(activeTab);
             }
@@ -92,7 +104,7 @@
             } else if (tab === "latest") {
                 loadLatestWebsites();
             }
-        }, [activeTab, resetScrollStates, setActiveTab, loadTrendingWebsites, loadLatestWebsites, unloadTabData]);
+        }, [activeTab, setActiveTab, loadTrendingWebsites, loadLatestWebsites, unloadTabData]);
     
         // Reset states when category changes
         useEffect(() => {
@@ -144,36 +156,37 @@
     
         // Infinite scroll observer
         useEffect(() => {
-            if (activeTab !== "all" || searchResults !== null) return;
-    
-            const handleObserver = (entries) => {
-                const [target] = entries;
-                if (target.isIntersecting && !loadingMore && !noMoreData) {
-                    if (displayCount < filteredWebsites.length) {
-                        setDisplayCount(prev => prev + 15);
-                    } else {
-                        loadMoreWebsites();
-                    }
+        if (activeTab !== "all" || searchResults !== null) return;
+
+        const handleObserver = (entries) => {
+            const [target] = entries;
+            if (target.isIntersecting && !loadingMore && !noMoreData) {
+                if (displayCount < filteredWebsites.length) {
+                    setDisplayCount(prev => prev + 15);
+                } else {
+                    loadMoreWebsites();
                 }
-            };
-    
-            observer.current = new IntersectionObserver(handleObserver, {
-                root: null,
-                rootMargin: "20px",
-                threshold: 0
-            });
-    
-            const loadMoreElement = document.querySelector('#load-more-trigger');
-            if (loadMoreElement) {
-                observer.current.observe(loadMoreElement);
             }
-    
-            return () => {
-                if (observer.current) {
-                    observer.current.disconnect();
-                }
-            };
-        }, [activeTab, searchResults, loadingMore, noMoreData, displayCount, filteredWebsites.length, loadMoreWebsites]);
+        };
+
+        observer.current = new IntersectionObserver(handleObserver, {
+            root: null,
+            rootMargin: "20px",
+            threshold: 0
+        });
+
+        const loadMoreElement = document.querySelector('#load-more-trigger');
+        if (loadMoreElement) {
+            observer.current.observe(loadMoreElement);
+        }
+
+        return () => {
+            if (observer.current) {
+                observer.current.disconnect();
+            }
+        };
+    }, [activeTab, searchResults, loadingMore, noMoreData, displayCount, filteredWebsites.length, loadMoreWebsites]);
+
 
         const handleCategorySelection = (category) => {
             setSelectedCategory(category);
