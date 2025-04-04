@@ -70,7 +70,7 @@
                 setSearchResults(null);
                 return;
             }
-    
+        
             const performSearch = async () => {
                 setIsSearching(true);
                 try {
@@ -82,29 +82,32 @@
                 }
                 setIsSearching(false);
             };
-    
+        
             const timer = setTimeout(performSearch, 300);
             return () => clearTimeout(timer);
         }, [searchQuery, searchAllWebsites]);
+        
     
         // Handle tab change
         const handleTabChange = useCallback((tab) => {
-            if (activeTab === tab) return;
-    
-            setSearchResults(null);
             
+            if (activeTab === tab) return;
+        
+            setSearchResults(null);
+            setSelectedCategory('All');  // Reset category
             if (activeTab === "trending" || activeTab === "latest") {
                 unloadTabData(activeTab);
             }
-    
+        
             setActiveTab(tab);
-    
+        
             if (tab === "trending") {
                 loadTrendingWebsites();
             } else if (tab === "latest") {
                 loadLatestWebsites();
             }
         }, [activeTab, setActiveTab, loadTrendingWebsites, loadLatestWebsites, unloadTabData]);
+        
     
         // Reset states when category changes
         useEffect(() => {
@@ -112,7 +115,15 @@
                 resetScrollStates();
                 setDisplayCount(15);
             }
+            
         }, [selectedCategory, activeTab, searchResults, resetScrollStates]);
+
+        useEffect(() => {
+            if (activeTab === "latest" && !latestWebsites.length && !latestLoading) {
+                loadLatestWebsites();
+            }
+        }, [activeTab, latestWebsites.length, latestLoading, loadLatestWebsites]);
+        
     
         // Filtered websites
         const filteredWebsites = useMemo(() => {
@@ -134,7 +145,7 @@
         // Displayed websites
         const displayedWebsites = useMemo(() => {
             if (searchResults !== null) return searchResults;
-    
+        
             switch (activeTab) {
                 case "trending": return trendingWebsites;
                 case "latest": return latestWebsites;
@@ -142,6 +153,7 @@
                 default: return filteredWebsites.slice(0, displayCount);
             }
         }, [activeTab, trendingWebsites, latestWebsites, filteredWebsites, displayCount, searchResults]);
+        
     
         // Loading state
         const isLoading = useMemo(() => {
