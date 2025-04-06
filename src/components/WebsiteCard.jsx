@@ -25,7 +25,15 @@ const WebsiteCard = ({
                     <FaRegHeart className="text-white text-xl hover:text-red-500" />
                 )}
             </button>
-            <img src={site.imageUrl} alt={site.title} className="w-full h-50 object-cover rounded-t-lg" />
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    onWebsiteClick(site);
+                }}
+                className="text-lg font-semibold text-white hover:underline text-left"
+            >
+                <img src={site.imageUrl} alt={site.title} className="w-full h-50 object-cover rounded-t-lg" />
+            </button>
             <div className="px-2">
                 <div className="flex justify-between items-center mt-2 py-2">
                     <button
