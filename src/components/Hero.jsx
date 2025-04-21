@@ -81,6 +81,7 @@ const Hero = ({ searchQuery }) => {
                 setSearchResults([]);
             }
             setIsSearching(false);
+            resetScroll();
         };
 
         const timer = setTimeout(performSearch, 300);
@@ -127,20 +128,20 @@ const Hero = ({ searchQuery }) => {
 
     // Filtered websites
     const filteredWebsites = useMemo(() => {
-    if (searchResults !== null) return [];
+        if (searchResults !== null) return [];
 
-    let filtered = selectedCategory === "All"
-        ? websites
-        : websites.filter(website =>
-            website.category.toLowerCase() === selectedCategory.toLowerCase()
-        );
+        let filtered = selectedCategory === "All"
+            ? websites
+            : websites.filter(website =>
+                website.category.toLowerCase() === selectedCategory.toLowerCase()
+            );
 
-    if (activeTab === "favorites") {
-        filtered = filtered.filter(website => favorites.includes(website.id));  // Filter based on favorites
-    }
+        if (activeTab === "favorites") {
+            filtered = filtered.filter(website => favorites.includes(website.id));  // Filter based on favorites
+        }
 
-    return filtered;
-}, [websites, selectedCategory, activeTab, favorites, searchResults]);
+        return filtered;
+    }, [websites, selectedCategory, activeTab, favorites, searchResults]);
 
 
     // Displayed websites
@@ -199,7 +200,7 @@ const Hero = ({ searchQuery }) => {
                 observer.current.disconnect();
             }
         };
-    }, [activeTab, searchResults, loadingMore, noMoreData, displayCount, filteredWebsites.length, loadMoreWebsites, selectedCategory]);
+    }, [activeTab, searchResults, loadingMore, noMoreData, displayCount, filteredWebsites.length, loadMoreWebsites, selectedCategory, favorites, toggleFavorite, unloadTabData]);
 
 
     const handleCategorySelection = (category) => {

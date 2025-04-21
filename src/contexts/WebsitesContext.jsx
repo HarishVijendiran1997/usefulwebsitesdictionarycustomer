@@ -67,7 +67,7 @@ const WebsitesProvider = ({ children }) => {
                 ? prev.filter(id => id !== websiteId) // Remove from favorites if it already exists
                 : [...prev, websiteId] // Add to favorites if not already there
         );
-    }, []);
+    }, [activeTab]);
 
     const loadInitialWebsites = useCallback(async () => {
         try {
