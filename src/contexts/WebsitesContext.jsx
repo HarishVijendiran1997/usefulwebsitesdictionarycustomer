@@ -36,31 +36,36 @@ const WebsitesProvider = ({ children }) => {
     const [latestLoaded, setLatestLoaded] = useState(false);
 
     const [favorites, setFavorites] = useState(() => {
-        try {
-            if (typeof window !== 'undefined') {
+        // Ensure we're in a browser environment before accessing localStorage
+        if (typeof window !== 'undefined') {
+            try {
                 const saved = localStorage.getItem('websiteFavorites');
                 return saved ? JSON.parse(saved) : [];
+            } catch (e) {
+                console.error("Error reading favorites:", e);
+                return [];
             }
-            return [];
-        } catch (e) {
-            console.error("Error reading favorites:", e);
-            return [];
         }
+        return [];
     });
 
+    // Save favorites to localStorage whenever it changes
     useEffect(() => {
-        try {
-            localStorage.setItem('websiteFavorites', JSON.stringify(favorites));
-        } catch (e) {
-            console.error("Error saving favorites:", e);
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('websiteFavorites', JSON.stringify(favorites));
+            } catch (e) {
+                console.error("Error saving favorites:", e);
+            }
         }
     }, [favorites]);
 
+    // Toggle favorite status of a website
     const toggleFavorite = useCallback((websiteId) => {
-        setFavorites(prev =>
+        setFavorites((prev) =>
             prev.includes(websiteId)
-                ? prev.filter(id => id !== websiteId)
-                : [...prev, websiteId]
+                ? prev.filter(id => id !== websiteId) // Remove from favorites if it already exists
+                : [...prev, websiteId] // Add to favorites if not already there
         );
     }, []);
 
@@ -68,7 +73,7 @@ const WebsitesProvider = ({ children }) => {
         try {
             setLoading(true);
             const websitesRef = collection(db, "websites");
-    
+
             let websitesQuery;
             if (activeTab === "all") {
                 websitesQuery = query(websitesRef, orderBy("title"), limit(15));
@@ -80,13 +85,13 @@ const WebsitesProvider = ({ children }) => {
                     limit(15)
                 );
             }
-    
+
             const documentSnapshots = await getDocs(websitesQuery);
             const newWebsites = documentSnapshots.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
-    
+
             setWebsites(newWebsites);
             setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
             setNoMoreData(newWebsites.length < 15);
@@ -96,16 +101,15 @@ const WebsitesProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, [activeTab]);
-    
+    }, []);
 
     const loadMoreWebsites = useCallback(async () => {
         if (!lastVisible || loadingMore || noMoreData) return;
-    
+
         try {
             setLoadingMore(true);
             const websitesRef = collection(db, "websites");
-    
+
             let websitesQuery;
             if (activeTab === "all") {
                 websitesQuery = query(
@@ -123,13 +127,13 @@ const WebsitesProvider = ({ children }) => {
                     limit(15)
                 );
             }
-    
+
             const documentSnapshots = await getDocs(websitesQuery);
             const newWebsites = documentSnapshots.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
-    
+
             setWebsites(prev => [...prev, ...newWebsites]);
             setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
             setNoMoreData(newWebsites.length < 15);
@@ -140,7 +144,6 @@ const WebsitesProvider = ({ children }) => {
             setLoadingMore(false);
         }
     }, [lastVisible, loadingMore, noMoreData, activeTab]);
-    
 
     const loadTrendingWebsites = useCallback(async () => {
         if (trendingLoaded) return;
@@ -172,26 +175,26 @@ const WebsitesProvider = ({ children }) => {
 
     const loadLatestWebsites = useCallback(async () => {
         if (latestLoaded) return;
-    
+
         try {
             setLatestLoading(true);
-    
+
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-    
+
             const baseQuery = query(
                 collection(db, "websites"),
                 orderBy("createdAt", "desc")
             );
-    
+
             const qToday = query(baseQuery, where("createdAt", ">=", Timestamp.fromDate(today)), limit(15));
             const snapshotToday = await getDocs(qToday);
-    
+
             let data = snapshotToday.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
-    
+
             if (data.length === 0) {
                 const fallbackSnapshot = await getDocs(query(baseQuery, limit(15)));
                 data = fallbackSnapshot.docs.map(doc => ({
@@ -199,7 +202,7 @@ const WebsitesProvider = ({ children }) => {
                     ...doc.data()
                 }));
             }
-    
+
             setLatestWebsites(data);
             setLatestLoading(false);
             setLatestLoaded(true);
@@ -208,9 +211,6 @@ const WebsitesProvider = ({ children }) => {
             setLatestLoading(false);
         }
     }, [latestLoaded]);
-    
-    
-    
 
     const resetScrollStates = useCallback(() => {
         setLastVisible(null);

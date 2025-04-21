@@ -127,20 +127,21 @@ const Hero = ({ searchQuery }) => {
 
     // Filtered websites
     const filteredWebsites = useMemo(() => {
-        if (searchResults !== null) return [];
+    if (searchResults !== null) return [];
 
-        let filtered = selectedCategory === "All"
-            ? websites
-            : websites.filter(website =>
-                website.category.toLowerCase() === selectedCategory.toLowerCase()
-            );
+    let filtered = selectedCategory === "All"
+        ? websites
+        : websites.filter(website =>
+            website.category.toLowerCase() === selectedCategory.toLowerCase()
+        );
 
-        if (activeTab === "favorites") {
-            filtered = filtered.filter(website => favorites.includes(website.id));
-        }
+    if (activeTab === "favorites") {
+        filtered = filtered.filter(website => favorites.includes(website.id));  // Filter based on favorites
+    }
 
-        return filtered;
-    }, [websites, selectedCategory, activeTab, favorites, searchResults]);
+    return filtered;
+}, [websites, selectedCategory, activeTab, favorites, searchResults]);
+
 
     // Displayed websites
     const displayedWebsites = useMemo(() => {
