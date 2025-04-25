@@ -30,7 +30,7 @@ function App() {
   }, [searchQuery]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-black">
+    <div className="flex flex-col h-[100dvh] bg-black">
       <NavBar
         searchQuery={searchQuery}
         onSearchChange={handleSearch}  // Changed to handleSearch
